@@ -22,37 +22,37 @@ class Ticket
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups("ticket:read")
+     * @Groups({"ticket:read","user:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Groups({"ticket:read", "ticket:write"})
+     * @Groups({"ticket:read", "ticket:write","user:read"})
      */
     private $imageUrl;
 
     /**
      * @ORM\Column(type="decimal", precision=7, scale=2)
-     * @Groups({"ticket:read", "ticket:write"})
+     * @Groups({"ticket:read", "ticket:write","user:read"})
      */
     private $price;
 
     /**
      * @ORM\Column(type="text", nullable=true)
-     * @Groups({"ticket:read", "ticket:write"})
+     * @Groups({"ticket:read", "ticket:write","user:read"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="string", length=10)
-     * @Groups({"ticket:read"})
+     * @Groups({"ticket:read","user:read"})
      */
     private $number;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups({"ticket:read"})
+     * @Groups({"ticket:read","user:read"})
      */
     private $createdAt;
 

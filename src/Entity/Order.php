@@ -51,6 +51,7 @@ class Order
     public function __construct()
     {
         $this->ticket = new ArrayCollection();
+        $this->createdAt = new \DateTime();
     }
 
     public function getId(): ?int

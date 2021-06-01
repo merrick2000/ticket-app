@@ -2,15 +2,18 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\MyTicketUserRepository;
+use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=MyTicketUserRepository::class)
- * @ApiResource
+ * @ApiResource(normalizationContext={"groups"={"users:read","user:read"}},
+ *  denormalizationContext={"groups"={"user:write"}}
+ * )
  */
 class MyTicketUser
 {
@@ -18,36 +21,43 @@ class MyTicketUser
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"users:read","user:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"users:read","user:read","user:write"})
      */
     private $fullname;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"users:read","user:read","user:write"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="string", length=50, nullable=true)
+     * @Groups({"users:read","user:read","user:write"})
      */
     private $telephone;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"users:read","user:read"})
      */
     private $createdAt;
 
     /**
      * @ORM\OneToMany(targetEntity=Ticket::class, mappedBy="user", orphanRemoval=true)
+     * @Groups({"user:read","user:write"})
      */
     private $tickets;
 
     public function __construct()
     {
+        $this->createdAt = new \DateTime();
         $this->tickets = new ArrayCollection();
     }
 
