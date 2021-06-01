@@ -37,7 +37,7 @@ class Customer
     /**
      * @ORM\Column(type="datetime")
      */
-    private $createddAt;
+    private $createdAt;
 
     public function __construct()
     {
@@ -84,14 +84,14 @@ class Customer
         return $this;
     }
 
-    public function getCreateddAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?\DateTimeInterface
     {
-        return $this->createddAt;
+        return $this->createdAt;
     }
 
-    public function setCreateddAt(\DateTimeInterface $createddAt): self
+    public function setCreatedAt(\DateTimeInterface $createddAt): self
     {
-        $this->createddAt = $createddAt;
+        $this->createdAt = $createddAt;
 
         return $this;
     }
