@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
  * @ORM\Entity(repositoryClass=OrderRepository::class)
@@ -45,6 +46,7 @@ class Order
     /**
      * @ORM\Column(type="integer")
      * @Groups({"ticket:read","ticket:write"})
+     * @NotBlank()
      */
     private $qte;
 
