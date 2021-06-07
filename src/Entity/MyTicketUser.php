@@ -5,15 +5,11 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\MyTicketUserRepository;
 use Doctrine\Common\Collections\Collection;
-use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=MyTicketUserRepository::class)
- * @ApiResource(normalizationContext={"groups"={"users:read","user:read"}},
- *  denormalizationContext={"groups"={"user:write"}}
- * )
  */
 class MyTicketUser
 {
@@ -21,13 +17,13 @@ class MyTicketUser
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"users:read","user:read"})
+     * @Groups({"tickets:read-all","ticket:read","user:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"users:read","user:read","user:write"})
+     * @Groups({"tickets:read-all","ticket:read","user:read","user:write"})
      */
     private $fullname;
 
@@ -60,6 +56,11 @@ class MyTicketUser
         $this->createdAt = new \DateTime();
         $this->tickets = new ArrayCollection();
     }
+
+    // public function __toString()
+    // {
+    //     return $this->fullname;
+    // }
 
     public function getId(): ?int
     {
