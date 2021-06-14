@@ -5,7 +5,6 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\OrderRepository;
 use Doctrine\Common\Collections\Collection;
-use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -13,7 +12,6 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 /**
  * @ORM\Entity(repositoryClass=OrderRepository::class)
  * @ORM\Table(name="`order`")
- * @ApiResource
  */
 class Order
 {
@@ -31,12 +29,14 @@ class Order
      */
     private $ticket;
 
+    
+
     /**
-     * @ORM\ManyToOne(targetEntity=Customer::class)
-     * @ORM\JoinColumn(nullable=false)
-     * @Groups({"ticket:read"})
+     * @ORM\Column(type="integer")
+     * @Groups({"ticket:read","ticket:write"})
+     * @NotBlank()
      */
-    private $customer;
+    private $qte;
 
     /**
      * @ORM\Column(type="datetime")
@@ -45,11 +45,10 @@ class Order
     private $createdAt;
 
     /**
-     * @ORM\Column(type="integer")
-     * @Groups({"ticket:read","ticket:write"})
-     * @NotBlank()
+     * @ORM\ManyToOne(targetEntity=Customer::class, inversedBy="orders")
+     * @ORM\JoinColumn(nullable=false)
      */
-    private $qte;
+    private $customer;
 
     public function __construct()
     {
@@ -86,18 +85,6 @@ class Order
         return $this;
     }
 
-    public function getCustomer(): ?Customer
-    {
-        return $this->customer;
-    }
-
-    public function setCustomer(?Customer $customer): self
-    {
-        $this->customer = $customer;
-
-        return $this;
-    }
-
     public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->createdAt;
@@ -121,4 +108,18 @@ class Order
 
         return $this;
     }
+
+    public function getCustomer(): ?Customer
+    {
+        return $this->customer;
+    }
+
+    public function setCustomer(?Customer $customer): self
+    {
+        $this->customer = $customer;
+
+        return $this;
+    }
+
+   
 }

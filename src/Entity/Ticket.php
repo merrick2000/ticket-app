@@ -5,16 +5,12 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\TicketRepository;
 use Doctrine\Common\Collections\Collection;
-use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
  * @ORM\Entity(repositoryClass=TicketRepository::class)
- * @ApiResource(
- *  normalizationContext={"groups"={"ticket:read"}},
- *  denormalizationContext={"groups"={"ticket:write"}}
- *  )
  */
 class Ticket
 {
@@ -22,37 +18,39 @@ class Ticket
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"ticket:read","user:read"})
+     * @Groups({"tickets:read-all","ticket:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Groups({"ticket:read", "ticket:write","user:read"})
+     * @Groups({"tickets:read-all", "ticket:read","user:read"})
+     * @NotBlank()
      */
     private $imageUrl;
 
     /**
      * @ORM\Column(type="decimal", precision=7, scale=2)
-     * @Groups({"ticket:read", "ticket:write","user:read"})
+     * @Groups({"tickets:read-all", "ticket:read","user:read"})
+     * @NotBlank()
      */
     private $price;
 
     /**
      * @ORM\Column(type="text", nullable=true)
-     * @Groups({"ticket:read", "ticket:write","user:read"})
+     * @Groups({"tickets:read-all", "ticket:read","user:read"})
      */
     private $description;
 
     /**
      * @ORM\Column(type="string", length=10)
-     * @Groups({"ticket:read","user:read"})
+     * @Groups({"tickets:read-all","ticket:read","user:read"})
      */
     private $number;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups({"ticket:read","user:read"})
+     * @Groups({"tickets:read-all","ticket:read"})
      */
     private $createdAt;
 
@@ -63,9 +61,10 @@ class Ticket
     private $orders;
 
     /**
-     * @ORM\ManyToOne(targetEntity=MyTicketUser::class, inversedBy="tickets")
+     * @ORM\ManyToOne(targetEntity=MyTicketUser::class, inversedBy="tickets", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"ticket:read", "ticket:write"})
+     * @Groups({"tickets:read-all", "ticket:read"})
+     * @NotBlank()
      */
     private $user;
 
@@ -75,6 +74,7 @@ class Ticket
         $this->orders = new ArrayCollection();
         $this->createdAt = new \DateTime();
         $this->number = 'TK_'. uniqid();
+        
     }
 
     public function getId(): ?int
