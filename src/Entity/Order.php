@@ -27,6 +27,7 @@ class Order
 
     /**
      * @ORM\ManyToMany(targetEntity=Ticket::class, inversedBy="orders")
+     * @NotBlank()
      */
     private $ticket;
 
