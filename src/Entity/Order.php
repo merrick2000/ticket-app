@@ -19,41 +19,51 @@ class Order
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"ticket:read"})
+     * @Groups({"ticket:read","orders:read-all","order:read"})
      */
     private $id;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Ticket::class, inversedBy="orders")
-     * @NotBlank()
-     */
-    private $ticket;
-
-    
-
-    /**
      * @ORM\Column(type="integer")
-     * @Groups({"ticket:read","ticket:write"})
+     * @Groups({"ticket:read","ticket:write","orders:read-all","order:read"})
      * @NotBlank()
      */
     private $qte;
 
     /**
-     * @ORM\Column(type="datetime")
-     * @Groups({"ticket:read"})
-     */
-    private $createdAt;
-
-    /**
      * @ORM\ManyToOne(targetEntity=Customer::class, inversedBy="orders")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"orders:read-all","order:read"})
+     * @NotBlank()
      */
     private $customer;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Ticket::class)
+     * @ORM\JoinColumn(nullable=false)
+     * @Groups({"orders:read-all","order:read"})
+     * @NotBlank()
+     */
+    private $ticket;
+
+    /**
+     * @ORM\Column(type="datetime")
+     * @Groups({"ticket:read","orders:read-all","order:read"})
+     */
+    
+    private $createdAt;
+    
+    /**
+     * @ORM\Column(type="datetime")
+     * @Groups({"orders:read-all","order:read"})
+     */
+    private $updatedAt;
+
     public function __construct()
     {
-        $this->ticket = new ArrayCollection();
+        // $this->ticket = new ArrayCollection();
         $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
     }
 
     public function getId(): ?int
@@ -61,28 +71,10 @@ class Order
         return $this->id;
     }
 
-    /**
-     * @return Collection|Ticket[]
-     */
-    public function getTicket(): Collection
+    
+    public function getTicket(): ?Ticket
     {
         return $this->ticket;
-    }
-
-    public function addTicket(Ticket $ticket): self
-    {
-        if (!$this->ticket->contains($ticket)) {
-            $this->ticket[] = $ticket;
-        }
-
-        return $this;
-    }
-
-    public function removeTicket(Ticket $ticket): self
-    {
-        $this->ticket->removeElement($ticket);
-
-        return $this;
     }
 
     public function getCreatedAt(): ?\DateTimeInterface
@@ -117,6 +109,25 @@ class Order
     public function setCustomer(?Customer $customer): self
     {
         $this->customer = $customer;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function setTicket(?Ticket $ticket): self
+    {
+        $this->ticket = $ticket;
 
         return $this;
     }

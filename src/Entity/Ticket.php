@@ -18,20 +18,20 @@ class Ticket
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"tickets:read-all","ticket:read"})
+     * @Groups({"tickets:read-all","ticket:read","order:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Groups({"tickets:read-all", "ticket:read","user:read"})
+     * @Groups({"tickets:read-all", "ticket:read","user:read","order:read"})
      * @NotBlank()
      */
     private $imageUrl;
 
     /**
      * @ORM\Column(type="decimal", precision=7, scale=2)
-     * @Groups({"tickets:read-all", "ticket:read","user:read"})
+     * @Groups({"tickets:read-all", "ticket:read","user:read","orders:read-all","order:read"})
      * @NotBlank()
      */
     private $price;
@@ -44,21 +44,22 @@ class Ticket
 
     /**
      * @ORM\Column(type="string", length=10)
-     * @Groups({"tickets:read-all","ticket:read","user:read"})
+     * @Groups({"tickets:read-all","ticket:read","user:read","order:read"})
      */
     private $number;
-
-    /**
-     * @ORM\Column(type="datetime")
-     * @Groups({"tickets:read-all","ticket:read"})
-     */
-    private $createdAt;
 
     /**
      * @ORM\ManyToMany(targetEntity=Order::class, mappedBy="ticket")
      * @Groups({"ticket:read"})
      */
     private $orders;
+
+    /**
+     * @ORM\Column(type="string", length=10)
+     * @Groups({"tickets:read-all", "ticket:read"})
+     * @NotBlank()
+     */
+    private $currency;
 
     /**
      * @ORM\ManyToOne(targetEntity=MyTicketUser::class, inversedBy="tickets", cascade={"persist"})
@@ -68,11 +69,24 @@ class Ticket
      */
     private $user;
 
+    /**
+     * @ORM\Column(type="datetime")
+     * @Groups({"tickets:read-all","ticket:read"})
+     */
+    private $createdAt;
 
+    /**
+     * @ORM\Column(type="datetime")
+     * @Groups({"tickets:read-all", "ticket:read"})
+     */
+    private $updatedAt;
+
+    
     public function __construct()
     {
         $this->orders = new ArrayCollection();
         $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
         $this->number = 'TK_'. uniqid();
         
     }
@@ -189,6 +203,30 @@ class Ticket
     public function setImage(string $image): self
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    public function getCurrency(): ?string
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(string $currency): self
+    {
+        $this->currency = $currency;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
