@@ -46,8 +46,7 @@ class MyTicketUser
     private $createdAt;
 
     /**
-     * @ORM\OneToMany(targetEntity=Ticket::class, mappedBy="user", orphanRemoval=true)
-     * @Groups({"user:read","user:write"})
+     * @ORM\OneToMany(targetEntity=Ticket::class, mappedBy="myTicketUser")
      */
     private $tickets;
 
@@ -127,7 +126,7 @@ class MyTicketUser
     {
         if (!$this->tickets->contains($ticket)) {
             $this->tickets[] = $ticket;
-            $ticket->setUser($this);
+            $ticket->setMyTicketUser($this);
         }
 
         return $this;
@@ -137,8 +136,8 @@ class MyTicketUser
     {
         if ($this->tickets->removeElement($ticket)) {
             // set the owning side to null (unless already changed)
-            if ($ticket->getUser() === $this) {
-                $ticket->setUser(null);
+            if ($ticket->getMyTicketUser() === $this) {
+                $ticket->setMyTicketUser(null);
             }
         }
 

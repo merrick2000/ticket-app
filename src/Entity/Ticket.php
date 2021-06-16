@@ -25,12 +25,12 @@ class Ticket
     /**
      * @ORM\Column(type="string", length=100)
      * @Groups({"tickets:read-all", "ticket:read","user:read"})
-     * @NotBlank()
+     * @NotBlank() 
      */
     private $imageUrl;
 
     /**
-     * @ORM\Column(type="decimal", precision=7, scale=2)
+     * @ORM\Column(type="decimal", precision=7, scale=2) 
      * @Groups({"tickets:read-all", "ticket:read","user:read"})
      * @NotBlank()
      */
@@ -61,13 +61,10 @@ class Ticket
     private $orders;
 
     /**
-     * @ORM\ManyToOne(targetEntity=MyTicketUser::class, inversedBy="tickets", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity=MyTicketUser::class, inversedBy="tickets")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"tickets:read-all", "ticket:read"})
-     * @NotBlank()
      */
-    private $user;
-
+    private $myTicketUser;
 
     public function __construct()
     {
@@ -169,18 +166,6 @@ class Ticket
         return $this;
     }
 
-    public function getUser(): ?MyTicketUser
-    {
-        return $this->user;
-    }
-
-    public function setUser(?MyTicketUser $user): self
-    {
-        $this->user = $user;
-
-        return $this;
-    }
-
     public function getImage(): ?string
     {
         return $this->image;
@@ -189,6 +174,18 @@ class Ticket
     public function setImage(string $image): self
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    public function getMyTicketUser(): ?MyTicketUser
+    {
+        return $this->myTicketUser;
+    }
+
+    public function setMyTicketUser(?MyTicketUser $myTicketUser): self
+    {
+        $this->myTicketUser = $myTicketUser;
 
         return $this;
     }

@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Ticket;
+use App\Entity\MyTicketUser;
 use App\Repository\TicketRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\MyTicketUserRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -45,14 +47,19 @@ class TicketController extends AbstractController
     /**
      * @Route("/tickets", name="new-ticket", methods={"POST"})
      */
-    public function create(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator)
+    public function create(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator, MyTicketUserRepository $userRepo)
     {
         $jsonReceived = $request->getContent();
 
         try{
-
+            
+            $user = json_decode($jsonReceived)->user;
+            $user = $userRepo->find($user);
             $ticket = $serializer->deserialize($jsonReceived, Ticket::class, 'json');
             $ticket->setPrice((string)$ticket->getPrice());
+            
+            var_dump($user);
+            
             $errors = $validator->validate($ticket);
             if (count($errors) > 0)
             {
