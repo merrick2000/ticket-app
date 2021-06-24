@@ -155,7 +155,6 @@ class Ticket
 
         return $this;
     }
-
     /**
      * @return Collection|Order[]
      */
