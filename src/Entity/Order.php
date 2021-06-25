@@ -39,10 +39,9 @@ class Order
     private $customer;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Ticket::class)
+     * @ORM\ManyToOne(targetEntity=Ticket::class, inversedBy="orders")
      * @ORM\JoinColumn(nullable=false)
      * @Groups({"orders:read-all","order:read"})
-     * @NotBlank()
      */
     private $ticket;
 
@@ -59,6 +58,7 @@ class Order
      */
     private $updatedAt;
 
+
     public function __construct()
     {
         // $this->ticket = new ArrayCollection();
@@ -72,10 +72,6 @@ class Order
     }
 
     
-    public function getTicket(): ?Ticket
-    {
-        return $this->ticket;
-    }
 
     public function getCreatedAt(): ?\DateTimeInterface
     {
@@ -123,6 +119,11 @@ class Order
         $this->updatedAt = $updatedAt;
 
         return $this;
+    }
+
+    public function getTicket(): ?Ticket
+    {
+        return $this->ticket;
     }
 
     public function setTicket(?Ticket $ticket): self
