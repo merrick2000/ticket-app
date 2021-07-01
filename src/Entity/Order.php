@@ -49,7 +49,6 @@ class Order
      * @ORM\Column(type="datetime")
      * @Groups({"ticket:read","orders:read-all","order:read"})
      */
-    
     private $createdAt;
     
     /**
