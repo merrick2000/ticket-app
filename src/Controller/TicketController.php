@@ -50,7 +50,7 @@ class TicketController extends AbstractController
     public function create(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator, MyTicketUserRepository $userRepo)
     {
         $jsonReceived = $request->getContent();
-
+        
         try{
             $user = json_decode($jsonReceived)->user;
             $user = $userRepo->find($user);
@@ -77,7 +77,6 @@ class TicketController extends AbstractController
                     "code" =>400
                 ], 400);
             }
-            
             //dd($ticket);
             $em->persist($ticket);
             $em->flush();

@@ -80,6 +80,9 @@ class Ticket
      */
     private $orders;
 
+    /**
+     * @Groups({"tickets:read-all", "ticket:read"})
+     */
     private $orderCount;
 
     public function __construct()
@@ -232,5 +235,15 @@ class Ticket
         }
 
         return $this;
+    }
+
+    public function setOrderCount(): void
+    {
+        $this->orderCount = count($this->orders);
+    }
+
+    public function getOrderCount(): int
+    {
+        return  $this->orderCount = count($this->orders);
     }
 }
