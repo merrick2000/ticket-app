@@ -25,7 +25,7 @@ class Order
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"ticket:read","ticket:write","orders:read-all","order:read"})
+     * @Groups({"ticket:read","ticket:write","orders:read-all","order:read","customer:read"})
      * @NotBlank()
      */
     private $qte;
@@ -47,7 +47,7 @@ class Order
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups({"ticket:read","orders:read-all","order:read"})
+     * @Groups({"ticket:read","orders:read-all","order:read","customer:read"})
      */
     private $createdAt;
     

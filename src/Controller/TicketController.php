@@ -144,12 +144,12 @@ class TicketController extends AbstractController
         }
 
         return $this->json([
-            'message' => 'Undefined held',
+            'message' => 'Undefined ticket ',
             'code' => 404
         ], 404);
     }
 
-    /**
+    /**  
     * @Route("/tickets/{id}", name="delete-ticket", methods={"DELETE"})
     */
     public function delete(Ticket $id=null, EntityManagerInterface $em)
@@ -157,7 +157,7 @@ class TicketController extends AbstractController
 
         if (!$id)
         {
-            return $this->json([
+            return $this->json([ 
                 'message' => 'Unable to find this ticket.',
                 'code' => 404
             ], 404);
