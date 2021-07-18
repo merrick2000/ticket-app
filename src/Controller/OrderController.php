@@ -2,11 +2,12 @@
 
 namespace App\Controller;
 
-use App\Entity\Ticket;
-use App\Entity\MyTicketUser;
+use App\Entity\Order;
+use App\Entity\Orders;
+use App\Repository\CustomerRepository;
+use App\Repository\OrderRepository;
 use App\Repository\TicketRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Repository\MyTicketUserRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,53 +19,63 @@ use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 /**
  * @Route("/api")
  */
-class TicketController extends AbstractController
+class OrderController extends AbstractController
 {
     /**
-     * @Route("/tickets", name="all-tickets", methods={"GET"})
+     * @Route("/orders", name="all-orders", methods={"GET"})
      */
-    public function index(TicketRepository $ticketRepo): Response
+    public function index(OrderRepository $orderRepo): Response
     {
-        return $this->json($ticketRepo->findAll(), 200, [], ['groups' => 'tickets:read-all']);
-        // return $this->render('ticket/index.html.twig', [
-        //     'controller_name' => 'TicketController',
-        // ]);
+        return $this->json($orderRepo->findAll(), 200, [], ['groups' => 'orders:read-all']);
     }
 
     /**
-     * @Route("/tickets/{id}", name="get-ticket-by-id", methods={"GET"})
+     * @Route("/orders/{id}", name="get-order-by-id", methods={"GET"})
      */
-    public function getTicket(Ticket $id=null, TicketRepository $ticketRepo)
+    public function getTicket(Order $id=null, OrderRepository $orderRepo)
     {
         if($id){
-            return $this->json($ticketRepo->find($id), 200, [], ['groups' => 'ticket:read']);
+            return $this->json($orderRepo->find($id), 200, [], ['groups' => 'order:read']);
         }
         return $this->json([
-            'message' => 'Unable to find this ticket.',
+            'message' => 'Unable to find this order.',
             'code' => 404
         ], 404);
     }
 
     /**
-     * @Route("/tickets", name="new-ticket", methods={"POST"})
+     * @Route("/orders", name="new-order", methods={"POST"})
      */
-    public function create(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator, MyTicketUserRepository $userRepo)
+    public function create(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator, TicketRepository $ticketRepository, CustomerRepository $customerRepository)
     {
         $jsonReceived = $request->getContent();
+        // if(!is_array(json_decode($jsonReceived)->ticket)){
+        //     return $this->json([
+        //         "message" => "ticket must be array, ex: ticket: [2]",
+        //         "code" =>400
+        //     ], 400);
+        // }
 
         try{
-            $user = json_decode($jsonReceived)->user;
-            $user = $userRepo->find($user);
-            if(!$user){
+
+            
+            $ticket = json_decode($jsonReceived)->ticket;
+            $customer = json_decode($jsonReceived)->customer;
+            $ticket = $ticketRepository->find($ticket);
+            $customer = $customerRepository->find($customer);
+           // dd($ticket);
+            if(!($ticket && $customer)){
                 return $this->json([
-                    "message" => "User not found",
+                    "message" => "Customer or ticket not found",
                     "code" =>400
                 ], 400);
             }
-
-            $ticket = $serializer->deserialize($jsonReceived, Ticket::class, 'json');
-            $ticket->setPrice((string)$ticket->getPrice());
-            $ticket->setUser($user);
+            
+            $order = $serializer->deserialize($jsonReceived, Order::class, 'json');
+            //dd($order);
+            $order->setTicket($ticket)
+                  ->setCustomer($customer);
+            
             $errors = $validator->validate($ticket);
             if (count($errors) > 0)
             {
@@ -80,10 +91,10 @@ class TicketController extends AbstractController
             }
             
             //dd($ticket);
-            $em->persist($ticket);
+            $em->persist($order);
             $em->flush();
 
-            return $this->json($ticket, 201, [], ['groups' => 'ticket:read']);
+            return $this->json($order, 201, [], ['groups' => 'order:read']);
         }
         catch(NotEncodableValueException
  $e)
@@ -97,19 +108,19 @@ class TicketController extends AbstractController
     }
 
     /**
-    * @Route("/tickets/{id}", name="update-held", methods={"PUT"})
+    * @Route("/orders/{id}", name="update-order", methods={"PUT"})
     */
-    public function update(Ticket $id, Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator)
+    public function update(Order $id, Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator)
     {
 
-        $updateTicket = $request->getContent();
+        $updateOrder = $request->getContent();
         if ($id)
         {
 
         try{
 
-            $updateTicket = $serializer->deserialize($updateTicket, Ticket::class, 'json');
-            $errors = $validator->validate($updateTicket);
+            $updateOrder = $serializer->deserialize($updateOrder, Order::class, 'json');
+            $errors = $validator->validate($updateOrder);
             if (count($errors) > 0)
             {
                 //Formatting  errors
@@ -124,15 +135,13 @@ class TicketController extends AbstractController
             }
             $date = new \DateTime();
             $id->setUpdatedAt($date);
-            $id->setImageUrl($updateTicket->getImageUrl());
-            $id->setPrice($updateTicket->getPrice());
-            $id->setDescription($updateTicket->getDescription());
-            $id->setCurrency($updateTicket->getCurrency());
+            $id->setQte($updateOrder->getQte());
+            $id->setTicket($updateOrder->getTicket());
         
             $em->persist($id);
             $em->flush();
 
-            return $this->json($id, 201, [], ['groups' => 'ticket:read']);
+            return $this->json($id, 201, [], ['groups' => 'order:read']);
         }
         catch(NotEncodableValueException
  $e)
@@ -152,15 +161,15 @@ class TicketController extends AbstractController
     }
 
     /**
-    * @Route("/tickets/{id}", name="delete-ticket", methods={"DELETE"})
+    * @Route("/orders/{id}", name="delete-order", methods={"DELETE"})
     */
-    public function delete(Ticket $id=null, EntityManagerInterface $em)
+    public function delete(Order $id=null, EntityManagerInterface $em)
     {
 
         if (!$id)
         {
             return $this->json([
-                'message' => 'Unable to find this ticket.',
+                'message' => 'Unable to find this order.',
                 'code' => 404
             ], 404);
         }
@@ -168,7 +177,7 @@ class TicketController extends AbstractController
         $em->flush();
             
         return $this->json([
-            'message' => 'Ticket deleted with success.',
+            'message' => 'Order deleted with success.',
             'code' => 200
         ], 200);
         

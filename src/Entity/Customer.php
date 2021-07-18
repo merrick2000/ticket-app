@@ -23,17 +23,19 @@ class Customer
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"ticket:read"})
+     * @Groups({"ticket:read","orders:read-all","order:read"})
      */
     private $fullname;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"orders:read-all","order:read"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="string", length=50, nullable=true)
+     * @Groups({"order:read"})
      */
     private $telephone;
 
