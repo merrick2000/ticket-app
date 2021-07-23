@@ -10,8 +10,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 // use FOS\RestBundle\Controller\AbstractFOSRestController;
+use Symfony\Component\Serializer\SerializerInterface;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 
@@ -45,23 +48,42 @@ class RegistrationController extends AbstractFOSRestController
      * @param Request $request
      * @return \FOS\RestBundle\View\View
      */
-    public function index(Request $request)
+    public function index(Request $request, SerializerInterface $serializer, ValidatorInterface $validator)
     {
         $jsonReceived = $request->getContent();
-        $email = $request->get('email');
-        $password = $request->get('password');
+        try {
+                 
+        //var_dump($jsonReceived->email);exit;
+
+        $email = json_decode($jsonReceived)->email;
+        $password = json_decode($jsonReceived)->password;
 
         $user = $this->userRepository->findOneBy([
             'email' => $email,
         ]);
 
         if (!is_null($user)) {
-            return $this->view([
-                'message' => 'User already exists'
-            ], Response::HTTP_CONFLICT);
+            return $this->json([
+                'message' => 'User already exists',
+                'code' => 409
+            ], 409, []);
         }
 
-        $user = new MyTicketUser();
+        $user = $serializer->deserialize($jsonReceived, MyTicketUser::class, 'json');
+        //$user = new MyTicketUser();
+        $errors = $validator->validate($user);
+            if (count($errors) > 0)
+            {
+                //Formatting  errors
+                for ($i=0; $i < count($errors); $i++) 
+                { 
+                    $error[$errors->get($i)->getPropertyPath()] = $errors->get($i)->getMessage();
+                }
+                return $this->json([
+                    "message" =>$error,
+                    "code" =>400
+                ], 400);
+            }
 
         $user->setEmail($email);
         $user->setPassword(
@@ -71,6 +93,16 @@ class RegistrationController extends AbstractFOSRestController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        return $this->view($user, Response::HTTP_CREATED)->setContext((new Context())->setGroups(['user:read']));
+        return $this->json($user, 201, [], ['groups' => 'user:read']);
+        } 
+        catch(NotEncodableValueException
+ $e)
+        {
+            return $this->json([
+                "code" => 400,
+                "message" => $e->getMessage()
+            ], 400);
+
+        }
     }
 }

@@ -7,6 +7,7 @@ use App\Repository\MyTicketUserRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
@@ -25,18 +26,21 @@ class MyTicketUser implements UserInterface
     /**
      * @ORM\Column(type="string", length=255)
      * @Groups({"tickets:read-all","ticket:read","user:read","user:write"})
+     * @NotBlank()
      */
     private $fullname;
 
     /**
      * @ORM\Column(type="string", length=255,unique=true)
      * @Groups({"users:read","user:read","user:write"})
+     * @NotBlank()
      */
     private $email;
 
     /**
      * @ORM\Column(type="string", length=50, nullable=true)
      * @Groups({"users:read","user:read","user:write"})
+     * @NotBlank()
      */
     private $telephone;
 
@@ -61,6 +65,7 @@ class MyTicketUser implements UserInterface
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
+     * @NotBlank()
      */
     private $password;
 
