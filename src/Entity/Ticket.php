@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\MyTicketUser;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\TicketRepository;
 use Doctrine\Common\Collections\Collection;
@@ -49,12 +50,6 @@ class Ticket
     private $number;
 
     /**
-     * @ORM\ManyToMany(targetEntity=Order::class, mappedBy="ticket")
-     * @Groups({"ticket:read"})
-     */
-    private $orders;
-
-    /**
      * @ORM\Column(type="string", length=10)
      * @Groups({"tickets:read-all", "ticket:read"})
      * @NotBlank()
@@ -79,14 +74,23 @@ class Ticket
      */
     private $updatedAt;
 
-    
+    /**
+     * @ORM\OneToMany(targetEntity=Order::class, mappedBy="ticket", orphanRemoval=true)
+     */
+    private $orders;
+
+    /**
+     * @Groups({"tickets:read-all", "ticket:read"})
+     */
+    private $orderCount;
+
     public function __construct()
     {
-        $this->orders = new ArrayCollection();
         $this->createdAt = new \DateTime();
         $this->updatedAt = new \DateTime();
         $this->number = 'TK_'. uniqid();
-        
+        $this->orders = new ArrayCollection();
+        $this->orderCount = 0;
     }
 
     public function getId(): ?int
@@ -154,34 +158,7 @@ class Ticket
         return $this;
     }
 
-    /**
-     * @return Collection|Order[]
-     */
-    public function getOrders(): Collection
-    {
-        return $this->orders;
-    }
-
-    public function addOrder(Order $order): self
-    {
-        if (!$this->orders->contains($order)) {
-            $this->orders[] = $order;
-            $order->addTicket($this);
-        }
-
-        return $this;
-    }
-
-    public function removeOrder(Order $order): self
-    {
-        if ($this->orders->removeElement($order)) {
-            $order->removeTicket($this);
-        }
-
-        return $this;
-    }
-
-    public function getImage(): ?string
+    public function getUser(): ?MyTicketUser
     {
         return $this->image;
     }
@@ -227,5 +204,45 @@ class Ticket
         $this->updatedAt = $updatedAt;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|Order[]
+     */
+    public function getOrders(): Collection
+    {
+        return $this->orders;
+    }
+
+    public function addOrder(Order $order): self
+    {
+        if (!$this->orders->contains($order)) {
+            $this->orders[] = $order;
+            $order->setTicket($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrder(Order $order): self
+    {
+        if ($this->orders->removeElement($order)) {
+            // set the owning side to null (unless already changed)
+            if ($order->getTicket() === $this) {
+                $order->setTicket(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function setOrderCount(): void
+    {
+        $this->orderCount = count($this->orders);
+    }
+
+    public function getOrderCount(): int
+    {
+        return  $this->orderCount = count($this->orders);
     }
 }

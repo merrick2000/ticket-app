@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CustomerRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
  * @ORM\Entity(repositoryClass=CustomerRepository::class)
@@ -17,30 +18,32 @@ class Customer
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"ticket:read"})
+     * @Groups({"ticket:read","customers:read-all","customer:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"ticket:read","orders:read-all","order:read"})
+     * @Groups({"ticket:read","orders:read-all","order:read","customers:read-all","customer:read"})
      */
     private $fullname;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"orders:read-all","order:read"})
+     * @Groups({"orders:read-all","order:read","customers:read-all","customer:read"})
+     * @NotBlank()
      */
     private $email;
 
     /**
      * @ORM\Column(type="string", length=50, nullable=true)
-     * @Groups({"order:read"})
+     * @Groups({"order:read","customers:read-all","customer:read"})
      */
     private $telephone;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"customers:read-all","customer:read"})
      */
     private $createdAt;
 
@@ -49,10 +52,16 @@ class Customer
      */
     private $orders;
 
+    /**
+     * @Groups({"customers:read-all", "customer:read"})
+     */
+    private $orderCount;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
         $this->orders = new ArrayCollection();
+        $this->orderCount = 0;
     }
     public function getId(): ?int
     {
@@ -135,5 +144,15 @@ class Customer
         }
 
         return $this;
+    }
+
+    public function setOrderCount(): void
+    {
+        $this->orderCount = count($this->orders);
+    }
+
+    public function getOrderCount(): int
+    {
+        return  $this->orderCount = count($this->orders);
     }
 }
