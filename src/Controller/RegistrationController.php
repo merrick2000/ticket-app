@@ -2,25 +2,107 @@
 
 namespace App\Controller;
 
+use App\Entity\MyTicketUser;
+use FOS\RestBundle\Context\Context;
+use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\MyTicketUserRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+// use FOS\RestBundle\Controller\AbstractFOSRestController;
+use Symfony\Component\Serializer\SerializerInterface;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 
-class RegistrationController extends AbstractController
+/**
+ * @Route("/api", name="api_")
+ */
+class RegistrationController extends AbstractFOSRestController
 {
-    private $userRepository;
-    public function __construct(MyTicketUserRepository  $userRepo)
-    {
-        $this->userRepository = $userRepo;   
-    }
     /**
-     * @Route("/register", name="registration")
+     * @var MyTicketUserRepository
      */
-    public function createUser(Request $request): Response
+    private $userRepository;
+    /**
+     * @var UserPasswordEncoderInterface
+     */
+    private $passwordEncoder;
+    /**
+     * @var EntityManagerInterface
+     */
+    private $entityManager;
+
+    public function __construct(MyTicketUserRepository $userRepository, UserPasswordEncoderInterface $passwordEncoder, EntityManagerInterface $entityManager)
     {
-       
+        $this->userRepository = $userRepository;
+        $this->passwordEncoder = $passwordEncoder;
+        $this->entityManager = $entityManager;
+    }
+
+    /**
+     * @Route("/register", name="register", methods={"POST"})
+     * @param Request $request
+     * @return \FOS\RestBundle\View\View
+     */
+    public function index(Request $request, SerializerInterface $serializer, ValidatorInterface $validator)
+    {
+        $jsonReceived = $request->getContent();
+        try {
+                 
+        //var_dump($jsonReceived->email);exit;
+
+        $email = json_decode($jsonReceived)->email;
+        $password = json_decode($jsonReceived)->password;
+
+        $user = $this->userRepository->findOneBy([
+            'email' => $email,
+        ]);
+
+        if (!is_null($user)) {
+            return $this->json([
+                'message' => 'User already exists',
+                'code' => 409
+            ], 409, []);
+        }
+
+        $user = $serializer->deserialize($jsonReceived, MyTicketUser::class, 'json');
+        //$user = new MyTicketUser();
+        $errors = $validator->validate($user);
+            if (count($errors) > 0)
+            {
+                //Formatting  errors
+                for ($i=0; $i < count($errors); $i++) 
+                { 
+                    $error[$errors->get($i)->getPropertyPath()] = $errors->get($i)->getMessage();
+                }
+                return $this->json([
+                    "message" =>$error,
+                    "code" =>400
+                ], 400);
+            }
+
+        $user->setEmail($email);
+        $user->setPassword(
+            $this->passwordEncoder->encodePassword($user, $password)
+        );
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return $this->json($user, 201, [], ['groups' => 'user:read']);
+        } 
+        catch(NotEncodableValueException
+ $e)
+        {
+            return $this->json([
+                "code" => 400,
+                "message" => $e->getMessage()
+            ], 400);
+
+        }
     }
 }
