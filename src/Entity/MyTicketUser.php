@@ -74,6 +74,11 @@ class MyTicketUser implements UserInterface
      */
     private $ticketCount;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $token;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -240,5 +245,17 @@ class MyTicketUser implements UserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(string $token): self
+    {
+        $this->token = $token;
+
+        return $this;
     }
 }
